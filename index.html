@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafeCity AI — Интеллектуальное видеонаблюдение и мониторинг объектов</title>
+<meta name="description" content="SafeCity AI v3.4 — российская система интеллектуального видеонаблюдения: детекция оружия, оставленных предметов и скоплений людей, центр мониторинга сети объектов. Работает офлайн.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230066cc'/><path d='M50 15 L80 30 V55 C80 72 66 84 50 90 C34 84 20 72 20 55 V30 Z' fill='%2300d4ff'/><path d='M38 52 l9 9 16-18' stroke='white' stroke-width='8' fill='none' stroke-linecap='round'/></svg>">
+<style>
+:root{
+  --bg:#0a0e1a; --bg2:#0f1624; --card:#131825; --line:rgba(255,255,255,.07);
+  --txt:#e4e7ec; --mut:#9ca3af; --dim:#6b7280;
+  --cyan:#00d4ff; --blue:#0066cc; --green:#10b981; --red:#ef4444; --amber:#f59e0b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',-apple-system,Arial,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6;overflow-x:hidden}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+a{color:var(--cyan);text-decoration:none}
+h1,h2,h3{line-height:1.2}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,14,26,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:1160px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px;color:var(--txt)}
+.logo-badge{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--cyan),var(--blue));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-badge svg{width:22px;height:22px}
+.nav-links{display:flex;gap:20px;font-size:14px}
+.nav-links a{color:var(--mut);transition:.2s}
+.nav-links a:hover{color:var(--cyan)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#fff;box-shadow:0 4px 20px rgba(0,212,255,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,212,255,.4)}
+.btn-ghost{background:transparent;color:var(--txt);border:1px solid rgba(255,255,255,.15)}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-sm{padding:9px 18px;font-size:13px}
+
+.hero{padding:170px 0 90px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;right:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(0,212,255,.12),transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-300px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(0,102,204,.10),transparent 65%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:100px;background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.25);color:var(--cyan);font-size:13px;font-weight:600;margin-bottom:26px}
+.badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-size:clamp(34px,5vw,56px);font-weight:800;letter-spacing:-.5px;margin-bottom:22px}
+.hero h1 .grad{background:linear-gradient(90deg,var(--cyan),#7ee8ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p.lead{font-size:clamp(16px,2vw,19px);color:var(--mut);max-width:740px;margin-bottom:36px}
+.hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:60px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.stat .num{font-size:30px;font-weight:800;color:var(--cyan)}
+.stat .lbl{font-size:13px;color:var(--mut);margin-top:4px}
+
+section{padding:90px 0}
+.sec-head{text-align:center;max-width:780px;margin:0 auto 56px}
+.sec-tag{color:var(--cyan);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.sec-head h2{font-size:clamp(26px,3.5vw,40px);font-weight:800;margin-bottom:14px}
+.sec-head p{color:var(--mut);font-size:16px}
+
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.f-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px;transition:.25s}
+.f-card:hover{transform:translateY(-4px);border-color:rgba(0,212,255,.35);box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.f-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.f-icon svg{width:26px;height:26px}
+.fi-red{background:rgba(239,68,68,.12);color:var(--red)}
+.fi-amber{background:rgba(245,158,11,.12);color:var(--amber)}
+.fi-cyan{background:rgba(0,212,255,.12);color:var(--cyan)}
+.fi-green{background:rgba(16,185,129,.12);color:var(--green)}
+.fi-blue{background:rgba(0,102,204,.15);color:#5ab8ff}
+.fi-purple{background:rgba(168,85,247,.12);color:#c084fc}
+.f-card h3{font-size:19px;margin-bottom:10px}
+.f-card p{color:var(--mut);font-size:14.5px}
+
+.how{background:var(--bg2)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px}
+.step .n{font-size:44px;font-weight:800;color:rgba(0,212,255,.18);line-height:1;margin-bottom:14px}
+.step h3{font-size:17px;margin-bottom:8px}
+.step p{color:var(--mut);font-size:14px}
+
+.center-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:40px}
+.mode{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;border-top:3px solid var(--cyan)}
+.mode h3{font-size:17px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.mode h3 svg{width:20px;height:20px;color:var(--cyan)}
+.mode p{color:var(--mut);font-size:14px}
+.mode ul{margin-top:12px;list-style:none}
+.mode li{padding:6px 0 6px 24px;position:relative;font-size:13.5px;color:var(--txt)}
+.mode li::before{content:'—';position:absolute;left:4px;color:var(--cyan)}
+
+.chips{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.chip{padding:10px 22px;border-radius:100px;background:var(--card);border:1px solid var(--line);font-size:14px;color:var(--txt)}
+
+.spec-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.spec-table td{padding:15px 22px;border-bottom:1px solid var(--line);font-size:14.5px;vertical-align:top}
+.spec-table tr:last-child td{border-bottom:none}
+.spec-table td:first-child{color:var(--mut);width:38%;white-space:nowrap}
+
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;align-items:stretch}
+.p-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px 28px;display:flex;flex-direction:column;position:relative}
+.p-card.featured{border-color:rgba(0,212,255,.5);background:linear-gradient(180deg,rgba(0,212,255,.06),var(--card))}
+.p-card.ever{border-color:rgba(16,185,129,.45);background:linear-gradient(180deg,rgba(16,185,129,.05),var(--card))}
+.p-flag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--cyan),var(--blue));color:#fff;font-size:12px;font-weight:700;padding:5px 16px;border-radius:100px;white-space:nowrap}
+.p-name{font-size:15px;color:var(--mut);font-weight:600;margin-bottom:10px;text-align:center}
+.p-price{font-size:30px;font-weight:800;margin-bottom:6px;text-align:center}
+.p-price span{font-size:14px;color:var(--dim);font-weight:500}
+.p-desc{color:var(--mut);font-size:13.5px;margin-bottom:22px;text-align:center}
+.p-list{list-style:none;margin-bottom:26px;flex:1}
+.p-list li{padding:8px 0 8px 26px;position:relative;font-size:13.5px;color:var(--txt);border-bottom:1px solid rgba(255,255,255,.04)}
+.p-list li::before{content:'✓';position:absolute;left:4px;color:var(--green);font-weight:700}
+.p-note{text-align:center;color:var(--dim);font-size:13.5px;margin-top:28px}
+
+.security{background:var(--bg2)}
+.sec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.sec-item{display:flex;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.sec-item .ic{width:42px;height:42px;border-radius:10px;background:rgba(16,185,129,.12);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sec-item .ic svg{width:20px;height:20px}
+.sec-item h3{font-size:15.5px;margin-bottom:6px}
+.sec-item p{color:var(--mut);font-size:13.5px}
+
+.contact{background:var(--bg2)}
+.contact-box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:44px;display:grid;grid-template-columns:1fr 1fr;gap:44px}
+.contact-box h2{font-size:28px;margin-bottom:14px}
+.contact-box .c-txt{color:var(--mut);font-size:15px;margin-bottom:26px}
+.c-row{display:flex;align-items:center;gap:14px;padding:12px 0;font-size:15px}
+.c-row .ic{width:40px;height:40px;border-radius:10px;background:rgba(0,212,255,.1);color:var(--cyan);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.c-row .ic svg{width:18px;height:18px}
+form .fld{margin-bottom:16px}
+form label{display:block;font-size:13px;color:var(--mut);margin-bottom:6px}
+form input,form textarea{width:100%;padding:12px 14px;background:var(--bg);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:var(--txt);font-size:14px;font-family:inherit}
+form input:focus,form textarea:focus{outline:none;border-color:var(--cyan)}
+form textarea{resize:vertical;min-height:90px}
+
+footer{padding:36px 0;border-top:1px solid var(--line);color:var(--dim);font-size:13px}
+.f-in{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.rv.on{opacity:1;transform:none}
+
+@media(max-width:860px){
+  .nav-links{display:none}
+  .contact-box{grid-template-columns:1fr}
+  .hero{padding-top:130px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="logo">
+      <div class="logo-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      SafeCity AI
+    </div>
+    <div class="nav-links">
+      <a href="#features">Возможности</a>
+      <a href="#center">Центр мониторинга</a>
+      <a href="#specs">Характеристики</a>
+      <a href="#configs">Сервер</a>
+      <a href="#pricing">Лицензии</a>
+    </div>
+    <a href="#contacts" class="btn btn-primary btn-sm">Запросить демо</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="badge"><span class="dot"></span> Версия 3.4 • Российская разработка</div>
+    <h1>Интеллектуальное видеонаблюдение<br>и <span class="grad">центр мониторинга объектов</span></h1>
+    <p class="lead">SafeCity AI обнаруживает оружие, оставленные предметы и скопления людей в реальном времени. Отдельные серверы объектов объединяются в единую сеть с центральным постом мониторинга — тревоги и видеопотоки всех объектов в одном окне.</p>
+    <div class="hero-cta">
+      <a href="#contacts" class="btn btn-primary">Запросить демонстрацию</a>
+      <a href="#center" class="btn btn-ghost">Как работает сеть объектов</a>
+    </div>
+    <div class="stats">
+      <div class="stat rv"><div class="num">20–25 м</div><div class="lbl">дальность детекции оружия (камеры 8 МП)</div></div>
+      <div class="stat rv"><div class="num">0.3–0.5 с</div><div class="lbl">задержка потока на посту оператора</div></div>
+      <div class="stat rv"><div class="num">до 100</div><div class="lbl">объектов в сети на один центр мониторинга</div></div>
+      <div class="stat rv"><div class="num">100%</div><div class="lbl">офлайн: данные не покидают объект</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-tag">Возможности</div>
+      <h2>Модули анализа видеопотока</h2>
+      <p>Каждый модуль включается и отключается из веб-интерфейса оператора в один клик</p>
+    </div>
+    <div class="grid3">
+      <div class="f-card rv">
+        <div class="f-icon fi-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div>
+        <h3>Детекция оружия</h3>
+        <p>Гибридная нейросеть YOLO + SAHI обнаруживает огнестрельное и холодное оружие на дистанции до 25 метров. Контекстный фильтр «оружие у человека» отсекает срабатывания на мебель и интерьер.</p>
+      </div>
+      <div class="f-card rv">
+        <div class="f-icon fi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7h12l2 13H4L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg></div>
+        <h3>Оставленные предметы</h3>
+        <p>Рюкзаки, чемоданы, сумки: трекинг с защитой от пропусков детекции поднимает тревогу, если предмет неподвижен дольше заданного времени. Мебель и техника игнорируются.</p>
+      </div>
+      <div class="f-card rv">
+        <div class="f-icon fi-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3>Счётчик людей и скопления</h3>
+        <p>Живой счётчик людей на каждом канале с цветовыми зонами: зелёная — норма, оранжевая — внимание, красная — скопление. Профилактика давки в проходных зонах.</p>
+      </div>
+      <div class="f-card rv">
+        <div class="f-icon fi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h3>Верификация оператором</h3>
+        <p>ИИ не рассылает ложные письма: тревога сначала появляется на посту с фото и кнопками «Подтвердить / Отвергнуть». Внешние оповещения уходят только после решения человека.</p>
+      </div>
+      <div class="f-card rv">
+        <div class="f-icon fi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4-2.5 5.5S15 17 15 19h-6c0-2-.3-3-1.5-4.5S5 11.4 5 9a7 7 0 0 1 7-7z"/><path d="M9 22h6"/></svg></div>
+        <h3>Самообучение на объекте</h3>
+        <p>Подтверждённые и отклонённые тревоги становятся датасетом. Модель дообучается на реальных кадрах с валидацией mAP и автоматическим откатом при ухудшении качества.</p>
+      </div>
+      <div class="f-card rv">
+        <div class="f-icon fi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+        <h3>Адаптивность к железу</h3>
+        <p>Три профиля производительности (HIGH / MEDIUM / LOW) определяются автоматически. Система остаётся работоспособной даже на слабом сервере: детекция сохраняется, снижается частота кадров.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="how">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-tag">Принцип работы</div>
+      <h2>От кадра до решения — четыре шага</h2>
+    </div>
+    <div class="steps">
+      <div class="step rv"><div class="n">01</div><h3>Видеопоток</h3><p>Любые IP-камеры по RTSP, включая 4K и 8 МП. Низколатентный режим: буферизация отключена.</p></div>
+      <div class="step rv"><div class="n">02</div><h3>Анализ ИИ</h3><p>Модули детекции на GPU (NVIDIA CUDA) или CPU. Двухступенчатая схема: сначала люди, затем оружие — экономия ресурсов.</p></div>
+      <div class="step rv"><div class="n">03</div><h3>Верификация</h3><p>Подозрительный кадр с рамками поступает оператору объекта. Решение принимает человек — ложные тревоги не покидают пост.</p></div>
+      <div class="step rv"><div class="n">04</div><h3>Реакция и обучение</h3><p>Подтверждённая тревога: оповещения, журнал, архив кадра и передача в центр мониторинга. Отклонённая — материал для дообучения.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="center">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-tag">Сеть объектов</div>
+      <h2>Центр мониторинга</h2>
+      <p>Серверы объектов подключаются к центральному серверу по защищённому туннелю. Соединение всегда инициируется объектом — работают любые сети и NAT, без открытия портов на объектах.</p>
+    </div>
+    <div class="center-modes">
+      <div class="mode rv">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Режим 1: Обзор</h3>
+        <p>Единый список всех объектов сети со статусами в реальном времени.</p>
+        <ul>
+          <li>Онлайн / офлайн по каждому объекту</li>
+          <li>Число камер, профиль производительности, версия ПО</li>
+          <li>Время последней связи для офлайн-объектов</li>
+        </ul>
+      </div>
+      <div class="mode rv">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Режим 2: Видео</h3>
+        <p>Просмотр камер любого объекта одним нажатием из списка.</p>
+        <ul>
+          <li>Живой поток через туннель (10–15 fps)</li>
+          <li>Трафик идёт только пока оператор смотрит</li>
+          <li>Одновременный просмотр нескольких объектов</li>
+        </ul>
+      </div>
+      <div class="mode rv">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Режим 3: Тревоги</h3>
+        <p>Единая лента тревог всей сети с решениями операторов.</p>
+        <ul>
+          <li>Фото с рамками, тип тревоги, камера, время</li>
+          <li>Решение оператора объекта и его имя</li>
+          <li>Звуковой сигнал, фильтры, экспорт журнала в CSV</li>
+        </ul>
+      </div>
+    </div>
+    <div class="p-note rv">Обрыв связи на объекте не теряет тревоги: они накапливаются в очереди и доотправляются автоматически после восстановления канала.</div>
+  </div>
+</section>
+
+<section id="apply" class="how">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-tag">Применение</div>
+      <h2>Сферы применения</h2>
+      <p>Универсальная платформа: сценарии детекции настраиваются под тип объекта</p>
+    </div>
+    <div class="chips rv">
+      <div class="chip">Образовательные учреждения</div>
+      <div class="chip">Медицинские учреждения</div>
+      <div class="chip">Госучреждения</div>
+      <div class="chip">Торговые центры</div>
+      <div class="chip">Транспортные узлы</div>
+      <div class="chip">Промышленные предприятия</div>
+      <div class="chip">Жилые комплексы</div>
+      <div class="chip">Складские комплексы</div>
+    </div>
+  </div>
+</section>
+
+<section id="specs">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-tag">Характеристики</div>
+      <h2>Технические требования и параметры</h2>
+    </div>
+    <table class="spec-table rv">
+      <tr><td>Операционная система</td><td>Windows 10 / 11 (64-bit), Windows Server 2019 / 2022</td></tr>
+      <tr><td>Вычисления</td><td>NVIDIA GTX 1060 и выше (CUDA) — профиль HIGH; CPU — профили MEDIUM / LOW с автоадаптацией</td></tr>
+      <tr><td>Видеокамеры</td><td>Любые IP-камеры с RTSP; рекомендовано 4–8 МП; до 32 каналов на сервер объекта</td></tr>
+      <tr><td>Дальность детекции</td><td>Оружие: до 25 м (8 МП, варифокальный объектив); оставленные предметы: вся зона обзора</td></tr>
+      <tr><td>Задержка потока</td><td>0.3–0.5 с на посту оператора объекта; 10–15 fps в центре мониторинга</td></tr>
+      <tr><td>Центр мониторинга</td><td>До 100 объектов на один центральный сервер (Windows Server, 16 ГБ RAM)</td></tr>
+      <tr><td>Интерфейсы</td><td>Веб-интерфейс оператора (HTTPS), панель администратора, консоль центра мониторинга, email-оповещения с фото</td></tr>
+      <tr><td>Журналирование</td><td>Журнал событий, журнал аудита, файловый лог с ротацией; экспорт тревог в CSV</td></tr>
+      <tr><td>Отказоустойчивость</td><td>Watchdog-процесс, автозапуск при включении ПК, автовосстановление потоков, очередь тревог при обрыве связи</td></tr>
+      <tr><td>Сеть</td><td>Интернет не требуется для работы объекта; для сети объектов — исходящий канал с объекта до центра</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="configs" class="how">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-tag">Сервер</div>
+      <h2>Готовые конфигурации сервера объекта</h2>
+      <p>Подбираем железо под число камер и задачи. Перед покупкой — бесплатная диагностика вашего ПК утилитой SafeCity_Diagnostics</p>
+    </div>
+    <div class="price-grid">
+      <div class="p-card rv">
+        <div class="p-name">Базовый сервер</div>
+        <div class="p-price">40–87 тыс ₽</div>
+        <div class="p-desc">до 4 камер 2–4 МП</div>
+        <ul class="p-list">
+          <li>Intel Core i5-12400F (6 ядер / 12 потоков)</li>
+          <li>16 ГБ DDR4</li>
+          <li>NVIDIA GTX 1660 Super 6 ГБ</li>
+          <li>SSD NVMe 512 ГБ</li>
+          <li>БП 550W 80+ Bronze</li>
+        </ul>
+        <a href="#contacts" class="btn btn-ghost" style="width:100%">Запросить подбор</a>
+      </div>
+      <div class="p-card featured rv">
+        <div class="p-flag">Оптимум для камер 8 МП</div>
+        <div class="p-name">Рекомендуемый сервер</div>
+        <div class="p-price">105–145 тыс ₽</div>
+        <div class="p-desc">до 12 камер до 8 МП</div>
+        <ul class="p-list">
+          <li>Intel Core i7-12700F (12 ядер / 20 потоков)</li>
+          <li>32 ГБ DDR4</li>
+          <li>NVIDIA RTX 3060 12 ГБ</li>
+          <li>SSD NVMe 1 ТБ</li>
+          <li>БП 650W 80+ Bronze/Gold</li>
+        </ul>
+        <a href="#contacts" class="btn btn-primary" style="width:100%">Запросить подбор</a>
+      </div>
+      <div class="p-card ever rv">
+        <div class="p-name">Корпоративный сервер</div>
+        <div class="p-price">250–300 тыс ₽</div>
+        <div class="p-desc">12–32 камеры 8 МП + дообучение</div>
+        <ul class="p-list">
+          <li>Intel Core i9-13900F (24 ядра / 32 потока)</li>
+          <li>64 ГБ DDR5</li>
+          <li>NVIDIA RTX 4070 Super 12 ГБ</li>
+          <li>SSD NVMe Gen4 2 ТБ</li>
+          <li>Жидкостное охлаждение + БП 850W Gold</li>
+        </ul>
+        <a href="#contacts" class="btn btn-ghost" style="width:100%">Обсудить проект</a>
+      </div>
+    </div>
+    <div class="p-note rv">Уже есть сервер? Утилита диагностики проверит его за 2 минуты: вердикт по конфигурациям, ограничения и список «что докупить». Отчёт сохраняется файлом для приложения к коммерческому предложению.</div>
+  </div>
+</section>
+
+<section id="security" class="security">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-tag">Безопасность</div>
+      <h2>Спроектировано для требований госзаказчика</h2>
+    </div>
+    <div class="sec-grid">
+      <div class="sec-item rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div><h3>Без облака</h3><p>Видео и события не покидают сервер объекта. Облачные сервисы не используются.</p></div></div>
+      <div class="sec-item rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><div><h3>Шифрование</h3><p>HTTPS с локальным сертификатом; пароли камер и почты в БД зашифрованы; туннель объекта с центром — TLS.</p></div></div>
+      <div class="sec-item rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h8"/></svg></div><div><h3>Журнал аудита</h3><p>Каждый вход, подтверждение тревоги и изменение настроек фиксируется с именем пользователя и временем.</p></div></div>
+      <div class="sec-item rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div><h3>Защита от подбора</h3><p>Блокировка IP после пяти неудачных попыток входа; пароли хранятся в виде хешей; сессии с уникальным ключом на установку.</p></div></div>
+      <div class="sec-item rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L19 3m-4 4l2 2"/></svg></div><div><h3>Регламент восстановления</h3><p>Доступ восстанавливается одноразовым кодом поставщика (24 ч, привязка к железу). Универсальных паролей в системе нет.</p></div></div>
+      <div class="sec-item rv"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M2 12h20"/></svg></div><div><h3>Локализация</h3><p>Полностью российская разработка: интерфейс, документация и техподдержка на русском языке.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div class="sec-tag">Лицензии</div>
+      <h2>💰 Стоимость лицензий</h2>
+      <p>Лицензия привязывается к серверу объекта и выдаётся под конкретную конфигурацию</p>
+    </div>
+    <div class="price-grid">
+      <div class="p-card rv">
+        <div class="p-name">Базовая</div>
+        <div class="p-price">120 000 ₽</div>
+        <div class="p-desc">до 4 камер • 6 мес</div>
+        <ul class="p-list">
+          <li>До 4 видеокамер</li>
+          <li>Все модули детекции</li>
+          <li>Веб-интерфейс оператора</li>
+          <li>Email-оповещения с фото</li>
+          <li>Поддержка по email</li>
+        </ul>
+        <a href="#contacts" class="btn btn-ghost" style="width:100%">Запросить счёт</a>
+      </div>
+      <div class="p-card featured rv">
+        <div class="p-flag">Оптимальный выбор</div>
+        <div class="p-name">Профессиональная</div>
+        <div class="p-price">280 000 ₽</div>
+        <div class="p-desc">от 5 до 12 камер • 6 мес</div>
+        <ul class="p-list">
+          <li>От 5 до 12 видеокамер</li>
+          <li>Всё из тарифа «Базовая»</li>
+          <li>Самообучение модели на объекте</li>
+          <li>Приоритетная поддержка</li>
+          <li>Выезд инженера для пусконаладки</li>
+        </ul>
+        <a href="#contacts" class="btn btn-primary" style="width:100%">Запросить счёт</a>
+      </div>
+      <div class="p-card rv">
+        <div class="p-name">Корпоративная</div>
+        <div class="p-price">1 900 000 ₽</div>
+        <div class="p-desc">под запрос • 6 мес</div>
+        <ul class="p-list">
+          <li>Количество камер — под запрос</li>
+          <li>Всё из тарифа «Профессиональная»</li>
+          <li>Центр мониторинга сети объектов</li>
+          <li>SLA и выделенный инженер</li>
+          <li>Участие в госзакупках (44-ФЗ, 223-ФЗ)</li>
+        </ul>
+        <a href="#contacts" class="btn btn-ghost" style="width:100%">Обсудить проект</a>
+      </div>
+      <div class="p-card ever rv">
+        <div class="p-name">Бессрочная</div>
+        <div class="p-price">6 450 000 ₽</div>
+        <div class="p-desc">гибкая разработка</div>
+        <ul class="p-list">
+          <li>Бессрочная лицензия без продлений</li>
+          <li>Любое количество камер и объектов</li>
+          <li>Разработка функций под требования заказчика</li>
+          <li>12 месяцев поддержки включены</li>
+          <li>Приоритетное развитие продукта под вас</li>
+        </ul>
+        <a href="#contacts" class="btn btn-ghost" style="width:100%">Получить условия</a>
+      </div>
+    </div>
+    <div class="p-note rv">По истечении 6 месяцев лицензия продлевается на тех же условиях. Для бюджетных учреждений — оформление через госзакупки.</div>
+  </div>
+</section>
+
+<section id="contacts" class="contact">
+  <div class="wrap">
+    <div class="contact-box rv">
+      <div>
+        <h2>Запросить демонстрацию</h2>
+        <p class="c-txt">Покажем систему на живом видеопотоке, проверим ваш сервер утилитой диагностики и подготовим коммерческое предложение в течение одного рабочего дня.</p>
+        <div class="c-row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg></div> sales@safecity-ai.ru</div>
+        <div class="c-row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div> +7 (XXX) XXX-XX-XX</div>
+        <div class="c-row"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div> Россия</div>
+      </div>
+      <form id="demo-form">
+        <div class="fld"><label>Ваше имя</label><input type="text" id="f-name" required placeholder="Иван Петров"></div>
+        <div class="fld"><label>Организация</label><input type="text" id="f-org" placeholder="Наименование организации"></div>
+        <div class="fld"><label>Телефон или email</label><input type="text" id="f-contact" required placeholder="+7 ... / mail@..."></div>
+        <div class="fld"><label>Задача</label><textarea id="f-msg" placeholder="Количество камер и объектов, тип объекта, сроки..."></textarea></div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Отправить заявку</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap f-in">
+    <div>© 2026 SafeCity AI • Россия</div>
+    <div>Интеллектуальное видеонаблюдение и мониторинг сети объектов</div>
+  </div>
+</footer>
+
+<script>
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); }
+}), {threshold: .12});
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+document.getElementById('demo-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = document.getElementById('f-name').value;
+  const org = document.getElementById('f-org').value || '—';
+  const contact = document.getElementById('f-contact').value;
+  const msg = document.getElementById('f-msg').value || '—';
+  const body = encodeURIComponent(
+    'Заявка на демонстрацию SafeCity AI\n\nИмя: ' + name +
+    '\nОрганизация: ' + org +
+    '\nКонтакт: ' + contact +
+    '\nЗадача: ' + msg);
+  window.location.href = 'mailto:sales@safecity-ai.ru?subject=' +
+    encodeURIComponent('Заявка на демо SafeCity AI') + '&body=' + body;
+});
+</script>
+</body>
+</html>
